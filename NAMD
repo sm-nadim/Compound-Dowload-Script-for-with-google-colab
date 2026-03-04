@@ -1,0 +1,106 @@
+# ============================================================================
+# NAMD Configuration for 10 ns Molecular Dynamics Simulation
+# Complete Production Run Based on Your Parameters
+# ============================================================================
+
+# ----------- INPUT FILES -----------
+coordinates             solvate.pdb
+structure               solvate.psf
+paratypecharmm          on
+
+# Force field parameters
+parameters ./par_all36_prot.prm
+parameters ./par_all36_na.prm
+parameters ./toppar_water_ions.str
+parameters ./par_all35_ethers.prm
+parameters ./par_all36_carb.prm
+parameters ./par_all36_lipid.prm
+parameters ./par_all36_cgenff.prm
+parameters ./par_hbond.inp
+parameters ./lig.prm
+
+# ----------- OUTPUT FILES -----------
+set output              production_10ns
+
+outputname              $output
+dcdfile                 ${output}.dcd
+xstFile                 ${output}.xst
+dcdfreq                 50
+xstFreq                 50
+binaryoutput            yes
+binaryrestart           yes
+outputEnergies          50
+restartfreq             50
+
+# ----------- BASIC DYNAMICS -----------
+exclude                 scaled1-4
+1-4scaling              1
+COMmotion               no
+dielectric              1.0
+
+# ----------- SIMULATION SPACE PARTITIONING -----------
+switching               on
+switchdist              9
+cutoff                  10
+pairlistdist            11
+
+# ----------- TIME STEPPING -----------
+firsttimestep           0
+timestep                2
+stepspercycle           1
+
+# ----------- TEMPERATURE CONTROL -----------
+set temperature         310
+temperature             $temperature
+
+# ----------- LANGEVIN DYNAMICS -----------
+langevin                on
+langevinDamping         1
+langevinTemp            $temperature
+
+# ----------- PME (PARTICLE MESH EWALD) -----------
+PME                     on
+PMEGridSizeX            100
+PMEGridSizeY            100
+PMEGridSizeZ            100
+
+# ----------- PRESSURE CONTROL (NPT) -----------
+useGroupPressure        yes
+
+LangevinPiston          on
+LangevinPistonTarget    1.02
+LangevinPistonPeriod    150
+LangevinPistonDecay     90
+LangevinPistonTemp      $temperature
+
+# ----------- PERIODIC BOUNDARY CONDITIONS -----------
+cellBasisVector1 63.73299980163574 0 0
+cellBasisVector2 0 66.54299783706665 0
+cellBasisVector3 0 0 78.55799698829651
+cellOrigin 1.6455930471420288 -35.50192642211914 36.399330139160156
+
+wrapWater               on
+wrapAll                 on
+wrapNearest             off
+
+# ============================================================================
+# INITIALIZATION: MINIMIZE AND PREPARE SYSTEM
+# ============================================================================
+
+minimize                100
+reinitvels              $temperature
+
+# ============================================================================
+# PRODUCTION RUN: 10 ns (5,000,000 steps at 2 fs timestep)
+# ============================================================================
+# Total simulation time: 10 ns
+# Timestep: 2 fs
+# Number of steps: 5,000,000
+# Output frequency: Every 50 steps = Every 100 ps
+# DCD trajectory: Every 50 steps = Every 100 ps
+# Restart files: Every 50 steps = Every 100 ps
+# ============================================================================
+
+run                     5000000
+
+# END OF 10 NS SIMULATION
